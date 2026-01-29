@@ -159,13 +159,13 @@ class MainActivity : AppCompatActivity() {
                                         updateTunerDisplay(lastValidPitchResult!!)
                                     }
                                 } else {
-                                    // Delay expired or no valid result, show no signal
+                                    // Delay expired or no valid result, show listening
                                     withContext(Dispatchers.Main) {
-                                        // Clear display or show no signal
+                                        // Clear display or show listening
                                         noteTextView.text = "--"
                                         frequencyTextView.text = ""
                                         centsTextView.text = ""
-                                        statusTextView.text = "No signal"
+                                        statusTextView.text = "Listening"
                                     }
                                 }
                             } else {
