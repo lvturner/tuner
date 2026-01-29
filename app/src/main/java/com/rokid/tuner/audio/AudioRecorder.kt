@@ -13,14 +13,14 @@ class AudioRecorder {
     private var audioRecord: AudioRecord? = null
     private var isRecording = false
     private val mutex = Mutex()
-    private var readCounter = 0
+     private var readCounter = AudioConfig.INITIAL_READ_COUNTER
 
     companion object {
         private const val TAG = "AudioRecorder"
-        private const val SAMPLE_RATE = 44100
+        private const val SAMPLE_RATE = AudioConfig.SAMPLE_RATE
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
-        private const val BUFFER_SIZE_BYTES = 4096
+        private const val BUFFER_SIZE_BYTES = AudioConfig.BUFFER_SIZE
         
         // Try different audio sources: DEFAULT, MIC, VOICE_RECOGNITION, CAMCORDER, UNPROCESSED
         private const val AUDIO_SOURCE = MediaRecorder.AudioSource.MIC
@@ -39,8 +39,8 @@ class AudioRecorder {
             }
         }
         
-        // Buffer size in shorts (16-bit samples)
-        private val bufferSizeShorts = minBufferSizeBytes / 2
+        // Buffer size in shorts (${AudioConfig.BITS_PER_SAMPLE}-bit samples)
+        private val bufferSizeShorts = minBufferSizeBytes / AudioConfig.BYTES_PER_SHORT
         
         init {
             Log.d(TAG, "AudioRecorder config: sampleRate=$SAMPLE_RATE, minBufferSizeBytes=$minBufferSizeBytes, bufferSizeShorts=$bufferSizeShorts")
@@ -51,18 +51,18 @@ class AudioRecorder {
         if (isRecording) return
 
         try {
-            Log.d(TAG, "Creating AudioRecord: source=$AUDIO_SOURCE, sampleRate=$SAMPLE_RATE, channel=$CHANNEL_CONFIG, format=$AUDIO_FORMAT, bufferSize=${minBufferSizeBytes * 2}")
+             Log.d(TAG, "Creating AudioRecord: source=$AUDIO_SOURCE, sampleRate=$SAMPLE_RATE, channel=$CHANNEL_CONFIG, format=$AUDIO_FORMAT, bufferSize=${minBufferSizeBytes * AudioConfig.BUFFER_SIZE_MULTIPLIER}")
             
             audioRecord = AudioRecord(
                 AUDIO_SOURCE,
                 SAMPLE_RATE,
                 CHANNEL_CONFIG,
                 AUDIO_FORMAT,
-                minBufferSizeBytes * 2
+                 minBufferSizeBytes * AudioConfig.BUFFER_SIZE_MULTIPLIER
             )
             
             val state = audioRecord?.state
-            Log.d(TAG, "AudioRecord created, state=$state (1=initialized)")
+             Log.d(TAG, "AudioRecord created, state=$state (${AudioConfig.AUDIO_RECORD_INITIALIZED}=initialized)")
             
             if (state != AudioRecord.STATE_INITIALIZED) {
                 Log.e(TAG, "AudioRecord not initialized properly")
@@ -71,9 +71,9 @@ class AudioRecorder {
 
             audioRecord?.startRecording()
             val recordingState = audioRecord?.recordingState
-            Log.d(TAG, "Recording state=$recordingState (3=recording)")
+             Log.d(TAG, "Recording state=$recordingState (${AudioConfig.AUDIO_RECORD_RECORDING}=recording)")
             isRecording = true
-            Log.d(TAG, "Audio buffer size: min=$minBufferSizeBytes, actual=${minBufferSizeBytes * 2}")
+             Log.d(TAG, "Audio buffer size: min=$minBufferSizeBytes, actual=${minBufferSizeBytes * AudioConfig.BUFFER_SIZE_MULTIPLIER}")
             Log.d(TAG, "Audio recording started successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start audio recording", e)
@@ -98,20 +98,20 @@ class AudioRecorder {
         val buffer = ShortArray(bufferSizeShorts)
         val floatBuffer = FloatArray(bufferSizeShorts)
         
-        val bytesRead = audioRecord!!.read(buffer, 0, bufferSizeShorts)
+        val bytesRead = audioRecord!!.read(buffer, AudioConfig.BUFFER_READ_OFFSET, bufferSizeShorts)
         
-        if (bytesRead <= 0) {
+        if (bytesRead <= AudioConfig.NO_DATA_READ) {
             Log.d(TAG, "No audio data read (bytesRead=$bytesRead)")
             return null
         }
         
         readCounter++
-        val shouldLog = readCounter <= 10 || readCounter % 20 == 0
+        val shouldLog = readCounter <= AudioConfig.INITIAL_LOG_THRESHOLD || readCounter % AudioConfig.LOG_FREQUENCY_MODULUS == 0
         
         // Compute RMS and statistics
-        var sum = 0.0
-        var maxAbs = 0
-        var sumSquares = 0.0
+        var sum = AudioConfig.INITIAL_SUM
+        var maxAbs = AudioConfig.INITIAL_MAX_AMPLITUDE
+        var sumSquares = AudioConfig.INITIAL_SUM_SQUARES
         for (i in 0 until bytesRead) {
             val sample = buffer[i].toInt()
             val abs = abs(sample)
@@ -127,7 +127,7 @@ class AudioRecorder {
             Log.d(TAG, "Average amplitude: $avgAmplitude, max amplitude: $maxAbs (max ${Short.MAX_VALUE})")
             Log.d(TAG, "RMS: $rms")
             // Log first 5 samples
-            if (bytesRead >= 5) {
+             if (bytesRead >= AudioConfig.SAMPLES_TO_LOG) {
                 Log.d(TAG, "First 5 samples: ${buffer[0]}, ${buffer[1]}, ${buffer[2]}, ${buffer[3]}, ${buffer[4]}")
             }
         }

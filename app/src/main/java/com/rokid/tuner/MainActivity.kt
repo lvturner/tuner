@@ -22,6 +22,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.lifecycleScope
+import com.rokid.tuner.audio.AudioConfig
+import com.rokid.tuner.constants.UiConstants
+import com.rokid.tuner.constants.MusicalConstants
+import com.rokid.tuner.constants.AlgorithmConstants
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,29 +39,24 @@ class MainActivity : AppCompatActivity() {
     private var pitchDetector: PitchDetector? = null
     private var tuningJob: Job? = null
     @Volatile private var isTuning = false
-    private var activityStartTime: Long = 0
+     private var activityStartTime: Long = UiConstants.INITIAL_TIME
     private var settingsDialog: SettingsDialog? = null
-    private var currentRms = 0.0
-    private var currentSensitivity = DEFAULT_SENSITIVITY
-    private var consecutiveNullReads = 0
-    private val MAX_CONSECUTIVE_NULL_READS = 10
+    private var currentRms = UiConstants.INITIAL_RMS
+     private var currentSensitivity = UiConstants.DEFAULT_SENSITIVITY
+    private var consecutiveNullReads = UiConstants.INITIAL_NULL_READS
     private var lastValidPitchResult: PitchDetector.PitchResult? = null
-    private var lastValidPitchTime: Long = 0
-    @Volatile private var displayDelayMs = DEFAULT_DISPLAY_DELAY_MS // Default 300ms display delay
-    private val DISPLAY_DELAY_MIN = 0L
-    private val DISPLAY_DELAY_MAX = 1000L
-    @Volatile private var pitchUpdateDelayMs = DEFAULT_PITCH_UPDATE_DELAY_MS // Default 100ms delay between pitch updates
-    private val PITCH_UPDATE_DELAY_MIN = 0L
-    private val PITCH_UPDATE_DELAY_MAX = 1000L
-    private var lastPitchUpdateTime: Long = 0
+     private var lastValidPitchTime: Long = UiConstants.INITIAL_TIME
+     @Volatile private var displayDelayMs = UiConstants.DEFAULT_DISPLAY_DELAY_MS // Default 1000ms display delay
+
+     @Volatile private var pitchUpdateDelayMs = UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS // Default 200ms delay between pitch updates
+
+    private var lastPitchUpdateTime: Long = UiConstants.INITIAL_TIME
 
     private companion object {
         private const val TAG = "MainActivity"
-        private const val AUDIO_PERMISSION_REQUEST_CODE = 1001
+        private const val AUDIO_PERMISSION_REQUEST_CODE = UiConstants.AUDIO_PERMISSION_REQUEST_CODE
         private const val DEBUG = true
-        private const val DEFAULT_SENSITIVITY = 100 // 0-100 scale, higher = more sensitive (100 = maximum sensitivity)
-        private const val DEFAULT_DISPLAY_DELAY_MS = 1000L // Default 1000ms display delay
-        private const val DEFAULT_PITCH_UPDATE_DELAY_MS = 200L // Default 200ms delay between pitch updates
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,9 +109,9 @@ class MainActivity : AppCompatActivity() {
                 audioRecorder?.start()
                 isTuning = true
                  lastValidPitchResult = null
-                 lastValidPitchTime = 0
-                 lastPitchUpdateTime = 0
-                 consecutiveNullReads = 0
+             lastValidPitchTime = UiConstants.INITIAL_TIME
+             lastPitchUpdateTime = UiConstants.INITIAL_TIME
+                  consecutiveNullReads = UiConstants.INITIAL_NULL_READS
                 statusTextView.text = getString(R.string.in_tune)
 
 
@@ -121,7 +120,7 @@ class MainActivity : AppCompatActivity() {
                 var iteration = 0
                 while (isActive && isTuning) {
                     iteration++
-                     val debug = iteration <= 10 || iteration % 20 == 0 || iteration % 100 == 0
+                      val debug = iteration <= UiConstants.DEBUG_ITERATION_THRESHOLD || iteration % UiConstants.DEBUG_ITERATION_MOD_20 == 0 || iteration % UiConstants.DEBUG_ITERATION_MOD_100 == 0
                     
                     if (debug) Log.d(TAG, "Loop iteration $iteration, isTuning=$isTuning")
                     
@@ -129,16 +128,16 @@ class MainActivity : AppCompatActivity() {
                       if (audioData == null) {
                           consecutiveNullReads++
                           if (debug) Log.d(TAG, "No audio data received, consecutive: $consecutiveNullReads")
-                          if (consecutiveNullReads >= MAX_CONSECUTIVE_NULL_READS) {
+                           if (consecutiveNullReads >= UiConstants.MAX_CONSECUTIVE_NULL_READS) {
                               Log.w(TAG, "Too many consecutive null reads ($consecutiveNullReads), restarting audio recorder")
                               restartAudioRecorder()
                           }
                            withContext(Dispatchers.Main) {
-                               currentRms = 0.0
+                                currentRms = UiConstants.INITIAL_RMS
                                updateRmsInDialog()
                            }
                        } else {
-                           consecutiveNullReads = 0
+                            consecutiveNullReads = UiConstants.INITIAL_NULL_READS
                           if (debug) Log.d(TAG, "Audio data size: ${audioData.size}")
                           val rms = computeRMS(audioData)
                           if (debug) Log.d(TAG, "RMS: $rms")
@@ -189,7 +188,7 @@ class MainActivity : AppCompatActivity() {
                                  }
                             }
                      }
-                    delay(50) // Update ~20 times per second
+                     delay(UiConstants.TUNING_LOOP_DELAY_MS) // Update ~20 times per second
                 }
                 Log.d(TAG, "Tuning loop ended")
             }
@@ -209,12 +208,12 @@ class MainActivity : AppCompatActivity() {
             audioRecorder = null
             pitchDetector = null
             lastValidPitchResult = null
-            lastValidPitchTime = 0
-            lastPitchUpdateTime = 0
+             lastValidPitchTime = UiConstants.INITIAL_TIME
+             lastPitchUpdateTime = UiConstants.INITIAL_TIME
             
              withContext(Dispatchers.Main) {
                   statusTextView.text = ""
-                  currentRms = 0.0
+                   currentRms = UiConstants.INITIAL_RMS
                   updateRmsInDialog()
                   
                   // Reset tuner display
@@ -232,7 +231,7 @@ class MainActivity : AppCompatActivity() {
         audioRecorder = AudioRecorder()
         try {
             audioRecorder?.start()
-            consecutiveNullReads = 0
+             consecutiveNullReads = UiConstants.INITIAL_NULL_READS
             Log.d(TAG, "Audio recorder restarted successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to restart audio recorder", e)
@@ -264,7 +263,7 @@ class MainActivity : AppCompatActivity() {
         // Update status based on cents
         val absCents = Math.abs(result.cents)
         statusTextView.text = when {
-            absCents < 5 -> getString(R.string.in_tune)
+             absCents < MusicalConstants.IN_TUNE_THRESHOLD_CENTS -> getString(R.string.in_tune)
             result.cents > 0 -> getString(R.string.sharp_indicator)
             else -> getString(R.string.flat_indicator)
         }
@@ -369,7 +368,7 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "onStop called, isTuning=$isTuning")
         super.onStop()
         val elapsed = System.currentTimeMillis() - activityStartTime
-        if (elapsed < 2000) {
+         if (elapsed < UiConstants.MIN_ACTIVITY_LIFETIME_MS) {
             Log.d(TAG, "Activity stopped too soon ($elapsed ms), not stopping tuning")
             return
         }

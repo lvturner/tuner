@@ -15,6 +15,7 @@ import android.content.DialogInterface
 import androidx.fragment.app.DialogFragment
 import com.rokid.tuner.R
 import com.rokid.tuner.audio.AudioConfig
+import com.rokid.tuner.constants.UiConstants
 import kotlin.math.roundToInt
 
 class SettingsDialog : DialogFragment() {
@@ -27,9 +28,9 @@ class SettingsDialog : DialogFragment() {
         
           fun newInstance(
               referenceFrequency: Double = AudioConfig.DEFAULT_REFERENCE_FREQUENCY,
-              sensitivity: Int = 50,
-                displayDelayMs: Long = 1000,
-               pitchUpdateDelayMs: Long = 200,
+               sensitivity: Int = UiConstants.SETTINGS_DEFAULT_SENSITIVITY,
+                displayDelayMs: Long = UiConstants.DEFAULT_DISPLAY_DELAY_MS,
+                pitchUpdateDelayMs: Long = UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS,
               onReferenceFrequencyChanged: ((Double) -> Unit)? = null,
               onSensitivityChanged: ((Int) -> Unit)? = null,
               onDisplayDelayChanged: ((Long) -> Unit)? = null,
@@ -71,17 +72,17 @@ class SettingsDialog : DialogFragment() {
       private lateinit var closeButton: Button
 
       private var currentFrequency = AudioConfig.DEFAULT_REFERENCE_FREQUENCY
-      private var currentSensitivity = 50 // 0-100 scale
-         private var currentDisplayDelayMs = 1000L // 0-1000 ms scale
-        private var currentPitchUpdateDelayMs = 200L // 0-1000 ms scale
+       private var currentSensitivity = UiConstants.SETTINGS_DEFAULT_SENSITIVITY // 0-100 scale
+          private var currentDisplayDelayMs = UiConstants.DEFAULT_DISPLAY_DELAY_MS // 0-1000 ms scale
+         private var currentPitchUpdateDelayMs = UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS // 0-1000 ms scale
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
          arguments?.let {
               currentFrequency = it.getDouble(ARG_REFERENCE_FREQUENCY, AudioConfig.DEFAULT_REFERENCE_FREQUENCY)
-              currentSensitivity = it.getInt(ARG_SENSITIVITY, 50)
-                currentDisplayDelayMs = it.getLong(ARG_DISPLAY_DELAY_MS, 1000)
-               currentPitchUpdateDelayMs = it.getLong(ARG_PITCH_UPDATE_DELAY_MS, 200)
+               currentSensitivity = it.getInt(ARG_SENSITIVITY, UiConstants.SETTINGS_DEFAULT_SENSITIVITY)
+                 currentDisplayDelayMs = it.getLong(ARG_DISPLAY_DELAY_MS, UiConstants.DEFAULT_DISPLAY_DELAY_MS)
+                currentPitchUpdateDelayMs = it.getLong(ARG_PITCH_UPDATE_DELAY_MS, UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS)
           }
     }
 
@@ -123,18 +124,18 @@ class SettingsDialog : DialogFragment() {
          
          // Set initial values
          frequencyEditText.setText(currentFrequency.toString())
-         frequencySeekBar.progress = ((currentFrequency - 430) * 2).roundToInt() // 430-450 Hz range
+          frequencySeekBar.progress = ((currentFrequency - UiConstants.MIN_REFERENCE_FREQUENCY) * UiConstants.FREQUENCY_SCALE_FACTOR).roundToInt() // 430-450 Hz range
          frequencyValueText.text = "${currentFrequency} Hz"
          
          sensitivitySeekBar.progress = currentSensitivity
          sensitivityValueText.text = "$currentSensitivity%"
          
           // Display delay: 0-1000 ms
-          displayDelaySeekBar.progress = currentDisplayDelayMs.coerceIn(0L, 1000L).toInt()
+           displayDelaySeekBar.progress = currentDisplayDelayMs.coerceIn(UiConstants.MIN_DISPLAY_DELAY_MS, UiConstants.MAX_DISPLAY_DELAY_MS).toInt()
           displayDelayValueText.text = "$currentDisplayDelayMs ms"
           
           // Pitch update delay: 0-1000 ms
-          pitchUpdateDelaySeekBar.progress = currentPitchUpdateDelayMs.coerceIn(0L, 1000L).toInt()
+           pitchUpdateDelaySeekBar.progress = currentPitchUpdateDelayMs.coerceIn(UiConstants.MIN_PITCH_UPDATE_DELAY_MS, UiConstants.MAX_PITCH_UPDATE_DELAY_MS).toInt()
           pitchUpdateDelayValueText.text = "$currentPitchUpdateDelayMs ms"
           
           rmsValueText.text = "--"
@@ -150,7 +151,7 @@ class SettingsDialog : DialogFragment() {
         frequencySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    currentFrequency = 430 + (progress / 2.0)
+                     currentFrequency = UiConstants.MIN_REFERENCE_FREQUENCY + (progress / UiConstants.FREQUENCY_SCALE_FACTOR)
                     frequencyEditText.setText(String.format("%.1f", currentFrequency))
                     frequencyValueText.text = "${String.format("%.1f", currentFrequency)} Hz"
                 }
@@ -215,9 +216,9 @@ class SettingsDialog : DialogFragment() {
     private fun updateFrequencyFromEditText() {
         try {
             val newFrequency = frequencyEditText.text.toString().toDouble()
-            if (newFrequency in 430.0..450.0) {
+             if (newFrequency in UiConstants.MIN_REFERENCE_FREQUENCY..UiConstants.MAX_REFERENCE_FREQUENCY) {
                 currentFrequency = newFrequency
-                frequencySeekBar.progress = ((newFrequency - 430) * 2).roundToInt()
+                 frequencySeekBar.progress = ((newFrequency - UiConstants.MIN_REFERENCE_FREQUENCY) * UiConstants.FREQUENCY_SCALE_FACTOR).roundToInt()
                 frequencyValueText.text = "${String.format("%.1f", newFrequency)} Hz"
                 onReferenceFrequencyChanged?.invoke(newFrequency)
             } else {
@@ -229,19 +230,19 @@ class SettingsDialog : DialogFragment() {
     }
 
     fun setInitialFrequency(frequency: Double) {
-        currentFrequency = frequency.coerceIn(430.0, 450.0)
+         currentFrequency = frequency.coerceIn(UiConstants.MIN_REFERENCE_FREQUENCY, UiConstants.MAX_REFERENCE_FREQUENCY)
     }
 
      fun setInitialSensitivity(sensitivity: Int) {
-         currentSensitivity = sensitivity.coerceIn(0, 100)
+          currentSensitivity = sensitivity.coerceIn(UiConstants.MIN_SENSITIVITY, UiConstants.MAX_SENSITIVITY)
      }
 
       fun setInitialDisplayDelay(delayMs: Long) {
-          currentDisplayDelayMs = delayMs.coerceIn(0L, 1000L)
+           currentDisplayDelayMs = delayMs.coerceIn(UiConstants.MIN_DISPLAY_DELAY_MS, UiConstants.MAX_DISPLAY_DELAY_MS)
       }
 
       fun setInitialPitchUpdateDelay(delayMs: Long) {
-          currentPitchUpdateDelayMs = delayMs.coerceIn(0L, 1000L)
+           currentPitchUpdateDelayMs = delayMs.coerceIn(UiConstants.MIN_PITCH_UPDATE_DELAY_MS, UiConstants.MAX_PITCH_UPDATE_DELAY_MS)
       }
 
      fun updateRmsValue(rms: Double) {
