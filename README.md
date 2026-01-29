@@ -6,7 +6,7 @@ A minimalist guitar tuner Android app designed for devices with monochromatic di
 
 - **Real-time pitch detection** using YIN algorithm
 - **Note detection** for any tuning (chromatic)
-- **Visual tuning indicator** with needle display
+- **Visual tuning indicator** with status display
 - **Monochromatic UI** optimized for black/white displays
 - **Simple navigation** for limited input devices
 - **Reference frequency calibration** (430-450 Hz)
@@ -22,16 +22,16 @@ A minimalist guitar tuner Android app designed for devices with monochromatic di
 
 ### Core Components
 
-1. **AudioRecorder** - Captures microphone input using AudioRecord
-2. **PitchDetector** - Implements YIN pitch detection algorithm
-3. **NoteFinder** - Maps frequencies to note names with cents calculation
-4. **TunerView** - Custom circular tuner display with needle indicator
+1. **MainActivity** - Primary UI and permission handling
+2. **AudioRecorder** - Captures microphone input using AudioRecord
+3. **PitchDetector** - Implements YIN pitch detection algorithm
+4. **NoteFinder** - Maps frequencies to note names with cents calculation
 5. **SettingsDialog** - Calibration and sensitivity settings
 
 ### Key Design Decisions
 
 - **Monochromatic color scheme**: Uses black, white, and grays for maximum contrast
-- **Circular tuner interface**: Natural representation of sharp/flat with needle
+- **Simple text-based interface**: Clear display of note, frequency, and cents deviation
 - **Simple navigation**: Large touch targets, single-screen with popup settings
 - **Relative tuning display**: Shows "close enough" indicator rather than exact values
 - **Optimized for limited hardware**: Efficient audio processing, minimal UI updates
@@ -45,11 +45,14 @@ app/src/main/
 │   ├── audio/
 │   │   ├── AudioRecorder.kt         # Audio capture using AudioRecord
 │   │   └── AudioConfig.kt           # Audio configuration constants
+│   ├── constants/
+│   │   ├── MusicalConstants.kt      # Musical note constants
+│   │   ├── UiConstants.kt           # UI dimension constants
+│   │   └── AlgorithmConstants.kt    # Algorithm parameters
 │   ├── pitch/
 │   │   ├── PitchDetector.kt         # Pitch detection (YIN algorithm)
 │   │   └── NoteFinder.kt            # Frequency to note mapping
 │   ├── ui/
-│   │   ├── TunerView.kt             # Custom circular tuner view
 │   │   └── SettingsDialog.kt        # Calibration settings dialog
 │   └── utils/
 │       ├── FrequencyUtils.kt        # Frequency/note conversion utilities
@@ -73,8 +76,8 @@ app/src/main/
 3. Tap "Start Tuning" button
 4. Play a guitar string
 5. Observe:
-   - Note name displayed in center
-   - Needle position shows sharp/flat
+   - Note name displayed
+   - Frequency shown in Hz
    - Cents deviation shown numerically
    - Status indicates "In Tune", "Sharp", or "Flat"
 
@@ -105,9 +108,9 @@ app/src/main/
 
 ### UI Design Principles
 - **High contrast**: Black on white for maximum readability
-- **Simple geometry**: Circles, lines, minimal ornamentation
+- **Simple layout**: Linear arrangement with clear typography
 - **Clear hierarchy**: Note name largest, status indicators smaller
-- **Immediate feedback**: Needle movement shows tuning direction
+- **Immediate feedback**: Status text shows tuning direction
 
 ## Performance Considerations
 
@@ -142,10 +145,36 @@ app/src/main/
 
 ## Building
 
+This project has only been tested on Linux. For other operating systems, your mileage may vary.
+
+### Environment Setup
+
+Before building, set up your environment using the provided script:
+
 ```bash
-./gradlew assembleDebug
-./gradlew assembleRelease
+source tools/setup-env.sh
 ```
+
+This script configures Java, Android SDK paths, and provides useful aliases like `tuner-build`, `tuner-assemble`, etc. After sourcing, run `./tools/env-check.sh` to verify your environment.
+
+### Building the APK
+
+You can build using the standard Gradle wrapper:
+
+```bash
+./gradlew assembleDebug    # Debug APK
+./gradlew assembleRelease  # Release APK
+```
+
+Or use the provided aliases after sourcing `setup-env.sh`:
+
+```bash
+tuner-build    # Build debug APK
+tuner-assemble # Build release APK
+tuner-deploy   # Deploy to connected device
+```
+
+See `tools/setup-env.sh` for all available commands.
 
 ## Dependencies
 
