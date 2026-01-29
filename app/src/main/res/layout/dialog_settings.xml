@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@color/background_color">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/reference_frequency"
+        style="@style/TunerTextMedium"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/frequency_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:hint="@string/reference_frequency_hint"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:backgroundTint="@color/gray_50"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 430-450 Hz in 0.5 Hz increments -->
+    <SeekBar
+        android:id="@+id/frequency_seek_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="40"
+        android:progress="20"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/frequency_value_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="440.0 Hz"
+        style="@style/TunerTextSmall"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sensitivity"
+        style="@style/TunerTextMedium"
+        android:layout_marginBottom="8dp" />
+
+    <SeekBar
+        android:id="@+id/sensitivity_seek_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="50"
+        android:layout_marginBottom="4dp" />
+
+     <TextView
+         android:id="@+id/sensitivity_value_text"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="50%"
+         style="@style/TunerTextSmall"
+         android:layout_gravity="center_horizontal"
+         android:layout_marginBottom="8dp" />
+
+     <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="@string/display_delay"
+         style="@style/TunerTextMedium"
+         android:layout_marginBottom="8dp" />
+
+     <SeekBar
+         android:id="@+id/display_delay_seek_bar"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:max="1000"
+          android:progress="1000"
+         android:layout_marginBottom="4dp" />
+
+     <TextView
+         android:id="@+id/display_delay_value_text"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+          android:text="1000 ms"
+         style="@style/TunerTextSmall"
+         android:layout_gravity="center_horizontal"
+          android:layout_marginBottom="8dp" />
+     
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/pitch_update_delay"
+        style="@style/TunerTextMedium"
+        android:layout_marginBottom="8dp" />
+
+    <SeekBar
+        android:id="@+id/pitch_update_delay_seek_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="1000"
+        android:progress="100"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/pitch_update_delay_value_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="100 ms"
+        style="@style/TunerTextSmall"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Audio level display -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="16dp">
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Audio Level:"
+            style="@style/TunerTextSmall"
+            android:layout_marginEnd="8dp" />
+            
+        <TextView
+            android:id="@+id/rms_value_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--"
+            style="@style/TunerTextSmall" />
+            
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/close_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/close"
+        style="@style/TunerButton"
+        android:layout_gravity="center_horizontal" />
+
+</LinearLayout>

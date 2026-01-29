@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="gray_50">#FF808080</color>
+    <color name="gray_30">#FF4D4D4D</color>
+    <color name="gray_70">#FFB3B3B3</color>
+    
+    <!-- Primary colors -->
+    <color name="primary_color">@color/white</color>
+    <color name="secondary_color">@color/black</color>
+    <color name="background_color">@color/black</color>
+    <color name="surface_color">@color/black</color>
+    
+    <!-- Text colors -->
+    <color name="text_primary">@color/white</color>
+    <color name="text_secondary">@color/gray_70</color>
+    
+    <!-- Tuner colors -->
+    <color name="tuner_circle">@color/gray_70</color>
+    <color name="tuner_needle">@color/white</color>
+    <color name="tuner_center">@color/white</color>
+    <color name="tuner_in_tone">@color/gray_70</color>
+    <color name="tuner_out_of_tone">@color/gray_30</color>
+</resources>
