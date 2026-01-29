@@ -45,10 +45,10 @@ Edit the existing vector drawable (`app/src/main/res/drawable/ic_launcher.xml`) 
 ## Available Icon Designs
 
 ### Generated PNG Icons
-- **guitar_tuner_simple.png** - Recommended clean headstock design
-- **guitar_tuner_with_note.png** - Headstock with subtle musical note
-- **tuning_fork_icon.png** - Tuning fork with note
-- **guitar_tuner_icon.png** - Original detailed design
+- **assets/guitar_tuner_simple.png** - Recommended clean headstock design
+- **assets/guitar_tuner_with_note.png** - Headstock with subtle musical note
+- **assets/tuning_fork_icon.png** - Tuning fork with note
+- **assets/guitar_tuner_icon.png** - Original detailed design
 
 ### Android Density-Specific Icons
 Already generated in `android_icons_guitar_tuner_simple/`:
@@ -103,7 +103,7 @@ mv app/src/main/res/drawable/ic_launcher.xml.backup app/src/main/res/drawable/ic
 ## Customization
 
 To modify the icon design:
-1. Edit `generate_simple_icon.py` or `generate_icon.py`
-2. Regenerate icons: `python3 generate_simple_icon.py`
-3. Regenerate Android densities: `python3 generate_android_icons.py`
-4. Reinstall: `./install_icon.sh`
+1. Edit `tools/generate_simple_icon.py` or `tools/generate_icon.py`
+2. Regenerate icons: `python3 tools/generate_simple_icon.py`
+3. Regenerate Android densities: `python3 tools/generate_android_icons.py`
+4. Reinstall: `./tools/install_icon.sh`

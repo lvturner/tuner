@@ -134,10 +134,10 @@ def main():
 
     # List available source images
     source_images = [
-        ("guitar_tuner_simple.png", "Clean headstock design"),
-        ("guitar_tuner_with_note.png", "Headstock with musical note"),
-        ("tuning_fork_icon.png", "Tuning fork design"),
-        ("guitar_tuner_icon.png", "Original detailed design"),
+        ("assets/guitar_tuner_simple.png", "Clean headstock design"),
+        ("assets/guitar_tuner_with_note.png", "Headstock with musical note"),
+        ("assets/tuning_fork_icon.png", "Tuning fork design"),
+        ("assets/guitar_tuner_icon.png", "Original detailed design"),
     ]
 
     available_images = []

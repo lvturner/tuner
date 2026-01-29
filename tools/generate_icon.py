@@ -5,6 +5,7 @@ Creates a 512x512 PNG image with white on black background.
 """
 
 import math
+import os
 from PIL import Image, ImageDraw
 
 
@@ -143,8 +144,11 @@ def main():
         # Generate the icon
         icon = create_guitar_tuner_icon(512)
 
+        # Ensure assets directory exists
+        os.makedirs("assets", exist_ok=True)
+
         # Save as PNG
-        output_path = "guitar_tuner_icon.png"
+        output_path = "assets/guitar_tuner_icon.png"
         icon.save(output_path, "PNG")
 
         print(f"Icon generated successfully: {output_path}")
@@ -153,8 +157,8 @@ def main():
 
         # Also create a smaller version for Android launcher (192x192)
         small_icon = create_guitar_tuner_icon(192)
-        small_icon.save("guitar_tuner_icon_small.png", "PNG")
-        print(f"Small icon generated: guitar_tuner_icon_small.png")
+        small_icon.save("assets/guitar_tuner_icon_small.png", "PNG")
+        print(f"Small icon generated: assets/guitar_tuner_icon_small.png")
 
     except ImportError as e:
         print("Error: Pillow library is required.")

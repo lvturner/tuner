@@ -3,28 +3,30 @@
 
 set -e  # Exit on error
 
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 echo "=== Guitar Tuner Icon Installation ==="
 echo
 
 # Check if we have generated icons
-ICON_DIR="android_icons_guitar_tuner_simple"
+ICON_DIR="$PROJECT_ROOT/android_icons_guitar_tuner_simple"
 if [ ! -d "$ICON_DIR" ]; then
     echo "Error: Generated icons not found."
-    echo "Please run: python3 generate_android_icons.py"
+    echo "Please run: python3 tools/generate_android_icons.py (from project root)"
     exit 1
 fi
 
 # Backup current icon
 BACKUP_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="project_backups/icon_backup_$BACKUP_TIMESTAMP"
-if [ -f "app/src/main/res/drawable/ic_launcher.xml" ]; then
+BACKUP_DIR="$PROJECT_ROOT/project_backups/icon_backup_$BACKUP_TIMESTAMP"
+if [ -f "$PROJECT_ROOT/app/src/main/res/drawable/ic_launcher.xml" ]; then
     echo "Backing up current vector icon..."
     mkdir -p "$BACKUP_DIR"
-    cp app/src/main/res/drawable/ic_launcher.xml "$BACKUP_DIR/"
+    cp "$PROJECT_ROOT/app/src/main/res/drawable/ic_launcher.xml" "$BACKUP_DIR/"
     echo "Backup saved to: $BACKUP_DIR/ic_launcher.xml"
     
     # Rename original to avoid potential conflicts
-    mv app/src/main/res/drawable/ic_launcher.xml app/src/main/res/drawable/ic_launcher_vector_backup.xml
+    mv "$PROJECT_ROOT/app/src/main/res/drawable/ic_launcher.xml" "$PROJECT_ROOT/app/src/main/res/drawable/ic_launcher_vector_backup.xml"
     echo "Original vector icon renamed to: ic_launcher_vector_backup.xml"
 fi
 
@@ -34,8 +36,8 @@ for density_dir in "$ICON_DIR"/mipmap-*; do
     if [ -d "$density_dir" ]; then
         density_name=$(basename "$density_dir")
         echo "  Installing $density_name..."
-        mkdir -p "app/src/main/res/$density_name"
-        cp "$density_dir/ic_launcher.png" "app/src/main/res/$density_name/"
+        mkdir -p "$PROJECT_ROOT/app/src/main/res/$density_name"
+        cp "$density_dir/ic_launcher.png" "$PROJECT_ROOT/app/src/main/res/$density_name/"
     fi
 done
 
@@ -62,12 +64,12 @@ fi
 
 # Copy notification icons if needed
 echo "Copying notification icons..."
-mkdir -p "app/src/main/res/drawable"
+mkdir -p "$PROJECT_ROOT/app/src/main/res/drawable"
 for notif_icon in "$ICON_DIR"/notification_*.png; do
     if [ -f "$notif_icon" ]; then
         icon_name=$(basename "$notif_icon")
         echo "  Copying $icon_name..."
-        cp "$notif_icon" "app/src/main/res/drawable/"
+        cp "$notif_icon" "$PROJECT_ROOT/app/src/main/res/drawable/"
     fi
 done
 

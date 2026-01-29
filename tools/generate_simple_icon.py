@@ -4,6 +4,7 @@ Generate a simple monochromatic guitar tuning app icon.
 Clean design with just guitar headstock and tuning pegs.
 """
 
+import os
 from PIL import Image, ImageDraw
 
 
@@ -226,20 +227,23 @@ def main():
     print("Generating guitar tuner icons...")
 
     try:
+        # Ensure assets directory exists
+        os.makedirs("assets", exist_ok=True)
+
         # Generate simple headstock icon (clean design)
         print("1. Generating simple headstock icon...")
         simple_icon = create_simple_headstock_icon(512, include_note=False)
-        simple_icon.save("guitar_tuner_simple.png", "PNG")
+        simple_icon.save("assets/guitar_tuner_simple.png", "PNG")
 
         # Generate headstock with note
         print("2. Generating headstock with note icon...")
         note_icon = create_simple_headstock_icon(512, include_note=True)
-        note_icon.save("guitar_tuner_with_note.png", "PNG")
+        note_icon.save("assets/guitar_tuner_with_note.png", "PNG")
 
         # Generate tuning fork icon
         print("3. Generating tuning fork icon...")
         fork_icon = create_tuning_fork_icon(512)
-        fork_icon.save("tuning_fork_icon.png", "PNG")
+        fork_icon.save("assets/tuning_fork_icon.png", "PNG")
 
         # Generate Android launcher sizes
         print("4. Generating Android launcher sizes (192x192)...")
@@ -249,14 +253,14 @@ def main():
             ("fork_192", create_tuning_fork_icon, (192,)),
         ]:
             icon = func(*args)
-            icon.save(f"{name}.png", "PNG")
+            icon.save(f"assets/{name}.png", "PNG")
 
         print("\nIcons generated successfully:")
-        print("- guitar_tuner_simple.png (512x512) - Clean headstock design")
-        print("- guitar_tuner_with_note.png (512x512) - Headstock with note")
-        print("- tuning_fork_icon.png (512x512) - Tuning fork design")
+        print("- assets/guitar_tuner_simple.png (512x512) - Clean headstock design")
+        print("- assets/guitar_tuner_with_note.png (512x512) - Headstock with note")
+        print("- assets/tuning_fork_icon.png (512x512) - Tuning fork design")
         print(
-            "- simple_192.png, note_192.png, fork_192.png (192x192) - Android launcher sizes"
+            "- assets/simple_192.png, assets/note_192.png, assets/fork_192.png (192x192) - Android launcher sizes"
         )
         print("\nAll icons are monochromatic (white on black).")
 

@@ -5,15 +5,15 @@ Generated monochromatic (white on black) icons for the guitar tuning application
 ## Generated Icons
 
 ### 512x512 (High Resolution)
-1. **guitar_tuner_icon.png** - Original design with detailed headstock and musical note
-2. **guitar_tuner_simple.png** - Clean headstock design with tuning indicators
-3. **guitar_tuner_with_note.png** - Headstock with subtle musical note
-4. **tuning_fork_icon.png** - Tuning fork with musical note design
+1. **assets/guitar_tuner_icon.png** - Original design with detailed headstock and musical note
+2. **assets/guitar_tuner_simple.png** - Clean headstock design with tuning indicators
+3. **assets/guitar_tuner_with_note.png** - Headstock with subtle musical note
+4. **assets/tuning_fork_icon.png** - Tuning fork with musical note design
 
 ### 192x192 (Android Launcher Size)
-1. **simple_192.png** - Clean headstock design
-2. **note_192.png** - Headstock with note  
-3. **fork_192.png** - Tuning fork design
+1. **assets/simple_192.png** - Clean headstock design
+2. **assets/note_192.png** - Headstock with note  
+3. **assets/fork_192.png** - Tuning fork design
 
 ## How to Use in Android App
 
@@ -33,7 +33,7 @@ The current app uses a vector drawable at `app/src/main/res/drawable/ic_launcher
      app/src/main/res/mipmap-xxhdpi/ic_launcher.png (144x144)
      app/src/main/res/mipmap-xxxhdpi/ic_launcher.png (192x192)
      ```
-   - Use `simple_192.png` for xxxhdpi, scale it down for other densities.
+   - Use `assets/simple_192.png` for xxxhdpi, scale it down for other densities.
 
 ### Option 2: Convert to Vector Drawable (Best Quality)
 
@@ -79,10 +79,10 @@ If you want to modify the icons:
 pip install Pillow
 
 # Generate all icons
-python3 generate_simple_icon.py
+python3 tools/generate_simple_icon.py
 
 # Or generate specific designs
-python3 generate_icon.py  # Original detailed design
+python3 tools/generate_icon.py  # Original detailed design
 ```
 
 ## Customization
@@ -95,10 +95,10 @@ Edit the Python scripts to:
 
 ## Recommended Choice
 
-For a guitar-specific tuning app, **guitar_tuner_simple.png** (clean headstock) is recommended. It's:
+For a guitar-specific tuning app, **assets/guitar_tuner_simple.png** (clean headstock) is recommended. It's:
 - Clearly guitar-related
 - Clean and modern
 - Easily recognizable at small sizes
 - Monochromatic for consistent theme
 
-For the Android launcher, use **simple_192.png** scaled to appropriate densities.
+For the Android launcher, use **assets/simple_192.png** scaled to appropriate densities.

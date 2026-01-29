@@ -264,7 +264,7 @@ This report identifies and documents all numeric literals ("magic numbers") in t
 
 ## Python Files Analysis
 
-### 1. `generate_icon.py` - Original detailed icon generation
+### 1. `tools/generate_icon.py` - Original detailed icon generation
 
 **Note:** Python icon generation scripts contain many geometric and scaling constants. While these are technically "magic numbers," they are often acceptable in graphics generation code where they represent visual proportions rather than business logic. However, key dimensions should still be extracted.
 
@@ -313,7 +313,7 @@ This report identifies and documents all numeric literals ("magic numbers") in t
 
 **File Summary:** Contains 40 magic numbers (many repeated), none defined as named constants. While many are geometric ratios acceptable in graphics code, key dimensions should be extracted.
 
-### 2. `generate_simple_icon.py` - Simplified icon generation
+### 2. `tools/generate_simple_icon.py` - Simplified icon generation
 
 | Line | Numeric Literal | Description | Named Constant? | Context/Usage | Recommendation |
 |------|-----------------|-------------|-----------------|---------------|----------------|
@@ -382,7 +382,7 @@ This report identifies and documents all numeric literals ("magic numbers") in t
 
 **File Summary:** Contains 61 magic numbers (many repeated), none defined as named constants. Similar to the first icon script, geometric ratios dominate.
 
-### 3. `generate_android_icons.py` - Android density-specific icon generation
+### 3. `tools/generate_android_icons.py` - Android density-specific icon generation
 
 | Line | Numeric Literal | Description | Named Constant? | Context/Usage | Recommendation |
 |------|-----------------|-------------|-----------------|---------------|----------------|
@@ -437,8 +437,8 @@ Based on frequency of use and impact:
 ### Files Requiring Most Attention
 
 1. `PitchDetector.kt` - 70 magic numbers, only 3 named
-2. `generate_simple_icon.py` - 61 magic numbers, none named  
-3. `generate_icon.py` - 40 magic numbers, none named
+2. `tools/generate_simple_icon.py` - 61 magic numbers, none named  
+3. `tools/generate_icon.py` - 40 magic numbers, none named
 4. `FrequencyUtils.kt` - 23 magic numbers, duplicates musical constants
 
 ---

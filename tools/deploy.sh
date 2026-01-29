@@ -4,7 +4,7 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APK_PATH="$PROJECT_ROOT/app/build/outputs/apk/debug/app-debug.apk"
 
 echo "🔧 Building and deploying Guitar Tuner..."
@@ -12,7 +12,7 @@ echo "🔧 Building and deploying Guitar Tuner..."
 # Check if APK exists, if not build it
 if [ ! -f "$APK_PATH" ]; then
     echo "APK not found at $APK_PATH, building..."
-    ./gradlew assembleDebug
+    ../gradlew assembleDebug
 fi
 
 # Check if adb is available
