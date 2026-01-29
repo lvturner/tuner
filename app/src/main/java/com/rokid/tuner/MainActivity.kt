@@ -41,9 +41,10 @@ class MainActivity : AppCompatActivity() {
     @Volatile private var isTuning = false
      private var activityStartTime: Long = UiConstants.INITIAL_TIME
     private var settingsDialog: SettingsDialog? = null
-    private var currentRms = UiConstants.INITIAL_RMS
-     private var currentSensitivity = UiConstants.DEFAULT_SENSITIVITY
-    private var consecutiveNullReads = UiConstants.INITIAL_NULL_READS
+     private var currentRms = UiConstants.INITIAL_RMS
+      private var currentSensitivity = UiConstants.DEFAULT_SENSITIVITY
+      private var inTuneThresholdCents = UiConstants.DEFAULT_IN_TUNE_THRESHOLD_CENTS
+     private var consecutiveNullReads = UiConstants.INITIAL_NULL_READS
     private var lastValidPitchResult: PitchDetector.PitchResult? = null
      private var lastValidPitchTime: Long = UiConstants.INITIAL_TIME
      @Volatile private var displayDelayMs = UiConstants.DEFAULT_DISPLAY_DELAY_MS // Default 1000ms display delay
@@ -263,7 +264,7 @@ class MainActivity : AppCompatActivity() {
         // Update status based on cents
         val absCents = Math.abs(result.cents)
         statusTextView.text = when {
-             absCents < MusicalConstants.IN_TUNE_THRESHOLD_CENTS -> getString(R.string.in_tune)
+              absCents < inTuneThresholdCents -> getString(R.string.in_tune)
             result.cents > 0 -> getString(R.string.sharp_indicator)
             else -> getString(R.string.flat_indicator)
         }
@@ -276,9 +277,10 @@ class MainActivity : AppCompatActivity() {
         }
         
           settingsDialog = SettingsDialog.newInstance(
-              sensitivity = currentSensitivity,
-              displayDelayMs = displayDelayMs,
-              pitchUpdateDelayMs = pitchUpdateDelayMs,
+               sensitivity = currentSensitivity,
+               displayDelayMs = displayDelayMs,
+               pitchUpdateDelayMs = pitchUpdateDelayMs,
+               inTuneThresholdCents = inTuneThresholdCents,
               onReferenceFrequencyChanged = { referenceFrequency ->
                   // Update pitch detector with new reference frequency
                   pitchDetector?.setReferenceFrequency(referenceFrequency)
@@ -292,10 +294,14 @@ class MainActivity : AppCompatActivity() {
                   // Update display delay
                   displayDelayMs = delayMs
               },
-              onPitchUpdateDelayChanged = { delayMs ->
-                  // Update pitch update delay
-                  pitchUpdateDelayMs = delayMs
-              }
+               onPitchUpdateDelayChanged = { delayMs ->
+                   // Update pitch update delay
+                   pitchUpdateDelayMs = delayMs
+               },
+               onInTuneThresholdChanged = { thresholdCents ->
+                   // Update in-tune threshold
+                   inTuneThresholdCents = thresholdCents
+               }
           ).apply {
             onDismissListener = {
                 settingsDialog = null

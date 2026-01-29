@@ -8,8 +8,10 @@
     <string name="reference_frequency_hint">440 Hz</string>
       <string name="sensitivity">Sensitivity</string>
       <string name="display_delay">Display Delay</string>
-      <string name="pitch_update_delay">Pitch Update Delay</string>
-      <string name="close">Close</string>
+       <string name="pitch_update_delay">Pitch Update Delay</string>
+       <string name="in_tune_threshold">In-tune Threshold</string>
+       <string name="in_tune_threshold_hint">cents</string>
+       <string name="close">Close</string>
     <string name="permission_rationale">This app needs microphone access to detect guitar pitch</string>
     <string name="grant_permission">Grant Permission</string>
     <string name="no_audio_permission">Microphone permission required</string>

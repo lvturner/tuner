@@ -12,7 +12,7 @@ class PitchDetector {
 
     companion object {
         private const val TAG = "PitchDetector"
-        private const val DEFAULT_MIN_RMS_THRESHOLD = AlgorithmConstants.DEFAULT_MIN_RMS_THRESHOLD // 0.05% of max amplitude (sensitive to short peaks but rejects constant low noise)
+        private const val DEFAULT_MIN_RMS_THRESHOLD = AlgorithmConstants.DEFAULT_MIN_RMS_THRESHOLD // 0.055% of max amplitude (sensitive to short peaks but rejects constant low noise)
         private const val DEFAULT_CLARITY_THRESHOLD = AlgorithmConstants.DEFAULT_CLARITY_THRESHOLD // Very tolerant clarity threshold (lower dPrime = clearer pitch)
         private const val DEFAULT_PROBABILITY_THRESHOLD = AlgorithmConstants.DEFAULT_PROBABILITY_THRESHOLD // Very tolerant probability threshold
         private const val DEBUG = UiConstants.DEBUG

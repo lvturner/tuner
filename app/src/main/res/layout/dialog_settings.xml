@@ -112,10 +112,34 @@
         android:text="100 ms"
         style="@style/TunerTextSmall"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="32dp" />
+         android:layout_marginBottom="8dp" />
 
-    <!-- Audio level display -->
-    <LinearLayout
+     <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="@string/in_tune_threshold"
+         style="@style/TunerTextMedium"
+         android:layout_marginBottom="8dp" />
+
+     <SeekBar
+         android:id="@+id/in_tune_threshold_seek_bar"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:max="50"
+         android:progress="10"
+         android:layout_marginBottom="4dp" />
+
+     <TextView
+         android:id="@+id/in_tune_threshold_value_text"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="10 cents"
+         style="@style/TunerTextSmall"
+         android:layout_gravity="center_horizontal"
+         android:layout_marginBottom="32dp" />
+
+     <!-- Audio level display -->
+     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"

@@ -71,8 +71,8 @@ This report identifies and documents all numeric literals ("magic numbers") in t
 
 | Line | Numeric Literal | Description | Named Constant? | Context/Usage | Recommendation |
 |------|-----------------|-------------|-----------------|---------------|----------------|
-| 12 | `0.0005` | Default minimum RMS threshold | Yes | `DEFAULT_MIN_RMS_THRESHOLD = 0.0005` | Already properly defined |
-| 12 | `0.05` | Percentage comment value | No | Comment: "0.05% of max amplitude" | Could extract as `PERCENTAGE_THRESHOLD` |
+| 12 | `0.00055` | Default minimum RMS threshold | Yes | `DEFAULT_MIN_RMS_THRESHOLD = 0.00055` | Already properly defined |
+| 12 | `0.055` | Percentage comment value | No | Comment: "0.055% of max amplitude" | Could extract as `PERCENTAGE_THRESHOLD` |
 | 13 | `0.8` | Default clarity threshold | Yes | `DEFAULT_CLARITY_THRESHOLD = 0.8` | Already properly defined |
 | 14 | `0` | Float literal suffix | No | `0.05f` formatting | Language syntax (acceptable) |
 | 18 | `0`, `100` | Sensitivity range bounds | No | Comment: "0-100 scale" | Extract as `MIN_SENSITIVITY`, `MAX_SENSITIVITY` |
@@ -80,8 +80,8 @@ This report identifies and documents all numeric literals ("magic numbers") in t
 | 21 | `100` | Maximum sensitivity | No | `sensitivity 100 -> lowest threshold` | Same as above |
 | 22 | `100` | Default sensitivity | No | `Default sensitivity is 100` | Extract as `DEFAULT_SENSITIVITY` |
 | 25 | `0`, `100` | Sensitivity range in mapping | No | `fun rmsThresholdFromSensitivity(sensitivity: Int)` | Already defined conceptually |
-| 28 | `0`, `0.01`, `100`, `0.0005` | RMS threshold calculation | No | `0.01 - (sensitivity / 100.0) * 0.0095` | Extract as `MAX_RMS_THRESHOLD`, `RMS_THRESHOLD_SCALE` |
-| 29 | `0.01`, `100.0`, `0.0095` | RMS threshold calculation | No | Implementation details | Extract as constants for formula |
+| 28 | `0`, `0.01`, `100`, `0.00055` | RMS threshold calculation | No | `0.01 - (sensitivity / 100.0) * 0.00945` | Extract as `MAX_RMS_THRESHOLD`, `RMS_THRESHOLD_SCALE` |
+| 29 | `0.01`, `100.0`, `0.00945` | RMS threshold calculation | No | Implementation details | Extract as constants for formula |
 | 34 | `0`, `0.1`, `100`, `0.8` | Clarity threshold calculation | No | `0.1 + (sensitivity / 100.0) * 0.7` | Extract as `MIN_CLARITY_THRESHOLD`, `CLARITY_THRESHOLD_SCALE`, `MAX_CLARITY_THRESHOLD` |
 | 35 | `0.1`, `100.0`, `0.7` | Clarity threshold calculation | No | Implementation details | Extract as formula constants |
 | 40 | `0`, `0.5`, `100`, `0.05` | Probability threshold calculation | No | `0.5f - (sensitivity / 100.0f) * 0.45f` | Extract as `MAX_PROBABILITY_THRESHOLD`, `PROBABILITY_THRESHOLD_SCALE`, `MIN_PROBABILITY_THRESHOLD` |

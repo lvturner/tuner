@@ -10,6 +10,11 @@ object UiConstants {
     const val DEFAULT_SENSITIVITY = 100  // Maximum sensitivity by default (used in MainActivity)
     const val SETTINGS_DEFAULT_SENSITIVITY = 50  // Midpoint default for settings dialog
     
+    // In-tune threshold configuration (cents)
+    const val MIN_IN_TUNE_THRESHOLD_CENTS = 0.0
+    const val MAX_IN_TUNE_THRESHOLD_CENTS = 50.0
+    const val DEFAULT_IN_TUNE_THRESHOLD_CENTS = 10.0
+    
     // Display timing constants (milliseconds)
     const val DEFAULT_DISPLAY_DELAY_MS = 1000L
     const val MIN_DISPLAY_DELAY_MS = 0L

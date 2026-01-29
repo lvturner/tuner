@@ -24,28 +24,33 @@ class SettingsDialog : DialogFragment() {
          private const val ARG_REFERENCE_FREQUENCY = "reference_frequency"
          private const val ARG_SENSITIVITY = "sensitivity"
           private const val ARG_DISPLAY_DELAY_MS = "display_delay_ms"
-          private const val ARG_PITCH_UPDATE_DELAY_MS = "pitch_update_delay_ms"
+           private const val ARG_PITCH_UPDATE_DELAY_MS = "pitch_update_delay_ms"
+           private const val ARG_IN_TUNE_THRESHOLD_CENTS = "in_tune_threshold_cents"
         
           fun newInstance(
-              referenceFrequency: Double = AudioConfig.DEFAULT_REFERENCE_FREQUENCY,
-               sensitivity: Int = UiConstants.SETTINGS_DEFAULT_SENSITIVITY,
-                displayDelayMs: Long = UiConstants.DEFAULT_DISPLAY_DELAY_MS,
-                pitchUpdateDelayMs: Long = UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS,
-              onReferenceFrequencyChanged: ((Double) -> Unit)? = null,
-              onSensitivityChanged: ((Int) -> Unit)? = null,
-              onDisplayDelayChanged: ((Long) -> Unit)? = null,
-              onPitchUpdateDelayChanged: ((Long) -> Unit)? = null
+               referenceFrequency: Double = AudioConfig.DEFAULT_REFERENCE_FREQUENCY,
+                sensitivity: Int = UiConstants.SETTINGS_DEFAULT_SENSITIVITY,
+                 displayDelayMs: Long = UiConstants.DEFAULT_DISPLAY_DELAY_MS,
+                 pitchUpdateDelayMs: Long = UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS,
+                 inTuneThresholdCents: Double = UiConstants.DEFAULT_IN_TUNE_THRESHOLD_CENTS,
+               onReferenceFrequencyChanged: ((Double) -> Unit)? = null,
+               onSensitivityChanged: ((Int) -> Unit)? = null,
+               onDisplayDelayChanged: ((Long) -> Unit)? = null,
+               onPitchUpdateDelayChanged: ((Long) -> Unit)? = null,
+               onInTuneThresholdChanged: ((Double) -> Unit)? = null
           ): SettingsDialog {
               val fragment = SettingsDialog()
-              fragment.onReferenceFrequencyChanged = onReferenceFrequencyChanged
-              fragment.onSensitivityChanged = onSensitivityChanged
-              fragment.onDisplayDelayChanged = onDisplayDelayChanged
-              fragment.onPitchUpdateDelayChanged = onPitchUpdateDelayChanged
+               fragment.onReferenceFrequencyChanged = onReferenceFrequencyChanged
+               fragment.onSensitivityChanged = onSensitivityChanged
+               fragment.onDisplayDelayChanged = onDisplayDelayChanged
+               fragment.onPitchUpdateDelayChanged = onPitchUpdateDelayChanged
+               fragment.onInTuneThresholdChanged = onInTuneThresholdChanged
               val args = Bundle().apply {
                   putDouble(ARG_REFERENCE_FREQUENCY, referenceFrequency)
                   putInt(ARG_SENSITIVITY, sensitivity)
-                  putLong(ARG_DISPLAY_DELAY_MS, displayDelayMs)
-                  putLong(ARG_PITCH_UPDATE_DELAY_MS, pitchUpdateDelayMs)
+                   putLong(ARG_DISPLAY_DELAY_MS, displayDelayMs)
+                   putLong(ARG_PITCH_UPDATE_DELAY_MS, pitchUpdateDelayMs)
+                   putDouble(ARG_IN_TUNE_THRESHOLD_CENTS, inTuneThresholdCents)
               }
               fragment.arguments = args
               return fragment
@@ -54,8 +59,9 @@ class SettingsDialog : DialogFragment() {
 
       private var onReferenceFrequencyChanged: ((Double) -> Unit)? = null
       private var onSensitivityChanged: ((Int) -> Unit)? = null
-      private var onDisplayDelayChanged: ((Long) -> Unit)? = null
-      private var onPitchUpdateDelayChanged: ((Long) -> Unit)? = null
+       private var onDisplayDelayChanged: ((Long) -> Unit)? = null
+       private var onPitchUpdateDelayChanged: ((Long) -> Unit)? = null
+       private var onInTuneThresholdChanged: ((Double) -> Unit)? = null
 
     var onDismissListener: (() -> Unit)? = null
 
@@ -66,23 +72,27 @@ class SettingsDialog : DialogFragment() {
      private lateinit var sensitivityValueText: TextView
       private lateinit var displayDelaySeekBar: SeekBar
       private lateinit var displayDelayValueText: TextView
-      private lateinit var pitchUpdateDelaySeekBar: SeekBar
-      private lateinit var pitchUpdateDelayValueText: TextView
-      private lateinit var rmsValueText: TextView
-      private lateinit var closeButton: Button
+       private lateinit var pitchUpdateDelaySeekBar: SeekBar
+       private lateinit var pitchUpdateDelayValueText: TextView
+       private lateinit var inTuneThresholdSeekBar: SeekBar
+       private lateinit var inTuneThresholdValueText: TextView
+       private lateinit var rmsValueText: TextView
+       private lateinit var closeButton: Button
 
       private var currentFrequency = AudioConfig.DEFAULT_REFERENCE_FREQUENCY
        private var currentSensitivity = UiConstants.SETTINGS_DEFAULT_SENSITIVITY // 0-100 scale
-          private var currentDisplayDelayMs = UiConstants.DEFAULT_DISPLAY_DELAY_MS // 0-1000 ms scale
-         private var currentPitchUpdateDelayMs = UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS // 0-1000 ms scale
+           private var currentDisplayDelayMs = UiConstants.DEFAULT_DISPLAY_DELAY_MS // 0-1000 ms scale
+          private var currentPitchUpdateDelayMs = UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS // 0-1000 ms scale
+          private var currentInTuneThresholdCents = UiConstants.DEFAULT_IN_TUNE_THRESHOLD_CENTS // 0-50 cents scale
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
          arguments?.let {
               currentFrequency = it.getDouble(ARG_REFERENCE_FREQUENCY, AudioConfig.DEFAULT_REFERENCE_FREQUENCY)
                currentSensitivity = it.getInt(ARG_SENSITIVITY, UiConstants.SETTINGS_DEFAULT_SENSITIVITY)
-                 currentDisplayDelayMs = it.getLong(ARG_DISPLAY_DELAY_MS, UiConstants.DEFAULT_DISPLAY_DELAY_MS)
-                currentPitchUpdateDelayMs = it.getLong(ARG_PITCH_UPDATE_DELAY_MS, UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS)
+                  currentDisplayDelayMs = it.getLong(ARG_DISPLAY_DELAY_MS, UiConstants.DEFAULT_DISPLAY_DELAY_MS)
+                 currentPitchUpdateDelayMs = it.getLong(ARG_PITCH_UPDATE_DELAY_MS, UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS)
+                 currentInTuneThresholdCents = it.getDouble(ARG_IN_TUNE_THRESHOLD_CENTS, UiConstants.DEFAULT_IN_TUNE_THRESHOLD_CENTS)
           }
     }
 
@@ -118,8 +128,10 @@ class SettingsDialog : DialogFragment() {
           displayDelaySeekBar = view.findViewById(R.id.display_delay_seek_bar)
           displayDelayValueText = view.findViewById(R.id.display_delay_value_text)
           pitchUpdateDelaySeekBar = view.findViewById(R.id.pitch_update_delay_seek_bar)
-          pitchUpdateDelayValueText = view.findViewById(R.id.pitch_update_delay_value_text)
-          rmsValueText = view.findViewById(R.id.rms_value_text)
+           pitchUpdateDelayValueText = view.findViewById(R.id.pitch_update_delay_value_text)
+           inTuneThresholdSeekBar = view.findViewById(R.id.in_tune_threshold_seek_bar)
+           inTuneThresholdValueText = view.findViewById(R.id.in_tune_threshold_value_text)
+           rmsValueText = view.findViewById(R.id.rms_value_text)
          closeButton = view.findViewById(R.id.close_button)
          
          // Set initial values
@@ -136,9 +148,13 @@ class SettingsDialog : DialogFragment() {
           
           // Pitch update delay: 0-1000 ms
            pitchUpdateDelaySeekBar.progress = currentPitchUpdateDelayMs.coerceIn(UiConstants.MIN_PITCH_UPDATE_DELAY_MS, UiConstants.MAX_PITCH_UPDATE_DELAY_MS).toInt()
-          pitchUpdateDelayValueText.text = "$currentPitchUpdateDelayMs ms"
-          
-          rmsValueText.text = "--"
+           pitchUpdateDelayValueText.text = "$currentPitchUpdateDelayMs ms"
+           
+           // In-tune threshold: 0-50 cents
+           inTuneThresholdSeekBar.progress = currentInTuneThresholdCents.coerceIn(UiConstants.MIN_IN_TUNE_THRESHOLD_CENTS, UiConstants.MAX_IN_TUNE_THRESHOLD_CENTS).roundToInt()
+           inTuneThresholdValueText.text = "${currentInTuneThresholdCents.roundToInt()} cents"
+           
+           rmsValueText.text = "--"
     }
 
     private fun setupListeners() {
@@ -206,11 +222,26 @@ class SettingsDialog : DialogFragment() {
                   // Update pitch update delay in main activity
                   onPitchUpdateDelayChanged?.invoke(currentPitchUpdateDelayMs)
               }
-          })
-          
-          closeButton.setOnClickListener {
-              dismiss()
-          }
+           })
+           
+           inTuneThresholdSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+               override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                   if (fromUser) {
+                       currentInTuneThresholdCents = progress.toDouble()
+                       inTuneThresholdValueText.text = "$progress cents"
+                   }
+               }
+               
+               override fun onStartTrackingTouch(seekBar: SeekBar) {}
+               override fun onStopTrackingTouch(seekBar: SeekBar) {
+                   // Update in-tune threshold in main activity
+                   onInTuneThresholdChanged?.invoke(currentInTuneThresholdCents)
+               }
+           })
+           
+           closeButton.setOnClickListener {
+               dismiss()
+           }
     }
 
     private fun updateFrequencyFromEditText() {
@@ -241,9 +272,13 @@ class SettingsDialog : DialogFragment() {
            currentDisplayDelayMs = delayMs.coerceIn(UiConstants.MIN_DISPLAY_DELAY_MS, UiConstants.MAX_DISPLAY_DELAY_MS)
       }
 
-      fun setInitialPitchUpdateDelay(delayMs: Long) {
-           currentPitchUpdateDelayMs = delayMs.coerceIn(UiConstants.MIN_PITCH_UPDATE_DELAY_MS, UiConstants.MAX_PITCH_UPDATE_DELAY_MS)
-      }
+       fun setInitialPitchUpdateDelay(delayMs: Long) {
+            currentPitchUpdateDelayMs = delayMs.coerceIn(UiConstants.MIN_PITCH_UPDATE_DELAY_MS, UiConstants.MAX_PITCH_UPDATE_DELAY_MS)
+       }
+
+       fun setInitialInTuneThreshold(thresholdCents: Double) {
+            currentInTuneThresholdCents = thresholdCents.coerceIn(UiConstants.MIN_IN_TUNE_THRESHOLD_CENTS, UiConstants.MAX_IN_TUNE_THRESHOLD_CENTS)
+       }
 
      fun updateRmsValue(rms: Double) {
         if (::rmsValueText.isInitialized) {

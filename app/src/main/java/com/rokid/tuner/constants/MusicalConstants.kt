@@ -21,8 +21,8 @@ object MusicalConstants {
     const val MIN_GUITAR_FREQUENCY = 80.0
     const val MAX_GUITAR_FREQUENCY = 1350.0
     
-    // Tuning tolerance
-    const val IN_TUNE_THRESHOLD_CENTS = 5.0
+    // Tuning tolerance (default 10 cents, configurable via settings)
+    const val IN_TUNE_THRESHOLD_CENTS = 10.0
     
     // Frequency generation constants
     const val OCTAVES_TO_GENERATE = 6
