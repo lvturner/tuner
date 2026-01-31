@@ -35,7 +35,7 @@ alias tuner-clean="./gradlew clean"
 alias tuner-assemble="./gradlew assembleRelease"
 alias tuner-test="./gradlew test"
 alias tuner-lint="./gradlew lint"
-alias tuner-deploy="./deploy.sh"
+alias tuner-deploy="$TUNER_PROJECT_ROOT/deploy.sh"
 alias tuner-logcat="adb logcat | grep com.rokid.tuner"
 alias tuner-devices="adb devices"
 

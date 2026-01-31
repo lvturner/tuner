@@ -7,7 +7,7 @@ object UiConstants {
     // Sensitivity configuration (0-100 scale)
     const val MIN_SENSITIVITY = 0
     const val MAX_SENSITIVITY = 100
-    const val DEFAULT_SENSITIVITY = 100  // Maximum sensitivity by default (used in MainActivity)
+    const val DEFAULT_SENSITIVITY = 100  // Maximum sensitivity by default for best detection
     const val SETTINGS_DEFAULT_SENSITIVITY = 50  // Midpoint default for settings dialog
     
     // In-tune threshold configuration (cents)

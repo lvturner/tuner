@@ -12,7 +12,7 @@ echo "🔧 Building and deploying Guitar Tuner..."
 # Check if APK exists, if not build it
 if [ ! -f "$APK_PATH" ]; then
     echo "APK not found at $APK_PATH, building..."
-    ../gradlew assembleDebug
+    "$PROJECT_ROOT/gradlew" assembleDebug
 fi
 
 # Check if adb is available

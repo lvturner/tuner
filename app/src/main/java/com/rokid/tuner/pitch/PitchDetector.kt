@@ -68,6 +68,45 @@ class PitchDetector {
         val probability: Float
     )
 
+    private data class YinResult(
+        val frequency: Double,
+        val clarity: Double  // dPrime[tau] - lower is clearer
+    )
+
+    private val frequencyHistory = mutableListOf<Double>()
+    private val clarityHistory = mutableListOf<Double>()
+    private val historySize = 3
+
+    private fun addToHistory(frequency: Double, clarity: Double) {
+        frequencyHistory.add(frequency)
+        clarityHistory.add(clarity)
+        if (frequencyHistory.size > historySize) {
+            frequencyHistory.removeAt(0)
+            clarityHistory.removeAt(0)
+        }
+    }
+
+    private fun medianFrequency(): Double {
+        if (frequencyHistory.isEmpty()) return 0.0
+        val sorted = frequencyHistory.sorted()
+        val mid = sorted.size / 2
+        return if (sorted.size % 2 == 0) (sorted[mid - 1] + sorted[mid]) / 2.0 else sorted[mid]
+    }
+
+    private fun medianClarity(): Double {
+        if (clarityHistory.isEmpty()) return 1.0
+        val sorted = clarityHistory.sorted()
+        val mid = sorted.size / 2
+        return if (sorted.size % 2 == 0) (sorted[mid - 1] + sorted[mid]) / 2.0 else sorted[mid]
+    }
+
+    // Note locking to prevent jumping to harmonics
+    private var lockedNoteName: String? = null
+    private var lockedFrequency: Double = 0.0
+    private var lockConfidence: Int = 0
+    private val LOCK_THRESHOLD = 2
+    private val FREQUENCY_TOLERANCE_RATIO = 0.1 // ±10% frequency tolerance for lock
+
     fun detectPitch(audioData: FloatArray): PitchResult? = synchronized(this) {
         if (audioData.isEmpty()) {
             Log.d(TAG, "Empty audio data")
@@ -81,23 +120,45 @@ class PitchDetector {
             return null
         }
 
-        // Simple YIN implementation for now (would integrate TarsosDSP fully)
-        val estimatedFrequency = estimateFrequencyYIN(audioData)
+        // YIN pitch detection with clarity feedback
+        val yinResult = estimateFrequencyYIN(audioData)
+        val rawFrequency = yinResult.frequency
+        val clarity = yinResult.clarity
         
-        Log.d(TAG, "Raw estimated frequency: $estimatedFrequency Hz")
+        if (DEBUG) Log.d(TAG, "Raw estimated frequency: $rawFrequency Hz, clarity: $clarity")
         
-        if (estimatedFrequency <= AlgorithmConstants.INVALID_FREQUENCY) {
-            Log.d(TAG, "Invalid frequency: $estimatedFrequency")
+        if (rawFrequency <= AlgorithmConstants.INVALID_FREQUENCY) {
+            Log.d(TAG, "Invalid frequency: $rawFrequency")
             return null
         }
         
         // Validate frequency range for guitar (80-1350 Hz)
-        if (estimatedFrequency < MusicalConstants.MIN_GUITAR_FREQUENCY || estimatedFrequency > MusicalConstants.MAX_GUITAR_FREQUENCY) {
-            Log.d(TAG, "Frequency out of guitar range (${MusicalConstants.MIN_GUITAR_FREQUENCY}-${MusicalConstants.MAX_GUITAR_FREQUENCY} Hz): $estimatedFrequency Hz")
+        if (rawFrequency < MusicalConstants.MIN_GUITAR_FREQUENCY || rawFrequency > MusicalConstants.MAX_GUITAR_FREQUENCY) {
+            Log.d(TAG, "Frequency out of guitar range (${MusicalConstants.MIN_GUITAR_FREQUENCY}-${MusicalConstants.MAX_GUITAR_FREQUENCY} Hz): $rawFrequency Hz")
             return null
         }
         
-        val noteInfo = noteFinder.findNote(estimatedFrequency, referenceFrequency)
+        // Add valid detection to history for median filtering
+        addToHistory(rawFrequency, clarity)
+        
+        // Compute median frequency and clarity from history
+        val medianFreq = medianFrequency()
+        val medianClarity = medianClarity()
+        
+        if (medianFreq <= AlgorithmConstants.INVALID_FREQUENCY) {
+            Log.d(TAG, "Median frequency invalid")
+            return null
+        }
+        
+        // Optional: reject if median clarity is too poor (higher than threshold)
+        // clarityThreshold is already used in YIN, but we can be stricter
+        if (medianClarity > clarityThreshold * 0.8) {
+            if (DEBUG) Log.d(TAG, "Median clarity too poor: $medianClarity > ${clarityThreshold * 0.8}")
+            // Continue anyway, but log
+        }
+        
+        // Find note based on median frequency
+        val noteInfo = noteFinder.findNote(medianFreq, referenceFrequency)
         
         // Validate probability (confidence)
         if (noteInfo.probability < probabilityThreshold) {
@@ -105,21 +166,63 @@ class PitchDetector {
             return null
         }
         
-        Log.d(TAG, "Detected: ${noteInfo.noteName} at $estimatedFrequency Hz, cents: ${noteInfo.cents}, prob: ${noteInfo.probability}")
+        Log.d(TAG, "Detected: ${noteInfo.noteName} at $medianFreq Hz (raw $rawFrequency), cents: ${noteInfo.cents}, prob: ${noteInfo.probability}, clarity: $medianClarity")
+        
+        // Note locking logic to prevent jumping to harmonics
+        val noteName = noteInfo.noteName
+        
+        if (lockedNoteName == null) {
+            // First detection, lock to this note
+            lockedNoteName = noteName
+            lockedFrequency = medianFreq
+            lockConfidence = LOCK_THRESHOLD
+            if (DEBUG) Log.d(TAG, "Note lock initialized: $noteName at $medianFreq Hz")
+        } else {
+            val frequencyDiff = Math.abs(medianFreq - lockedFrequency) / lockedFrequency
+            val sameNote = noteName == lockedNoteName || frequencyDiff < FREQUENCY_TOLERANCE_RATIO
+            
+            if (sameNote) {
+                // Same note, reinforce lock
+                lockConfidence = Math.min(LOCK_THRESHOLD, lockConfidence + 1)
+                lockedFrequency = medianFreq // update locked frequency
+                if (DEBUG) Log.d(TAG, "Note lock reinforced: confidence=$lockConfidence")
+            } else {
+                // Different note, weaken lock
+                lockConfidence--
+                if (DEBUG) Log.d(TAG, "Note lock weakened: confidence=$lockConfidence")
+                if (lockConfidence <= 0) {
+                    // Switch lock to new note
+                    lockedNoteName = noteName
+                    lockedFrequency = medianFreq
+                    lockConfidence = LOCK_THRESHOLD
+                    if (DEBUG) Log.d(TAG, "Note lock switched to: $noteName at $medianFreq Hz")
+                } else {
+                    // Still locked to previous note, ignore this detection
+                    Log.d(TAG, "Ignoring detection due to note lock (locked: $lockedNoteName, detected: $noteName)")
+                    return null
+                }
+            }
+        }
+        
+        // Use locked note for display
+        val displayFrequency = lockedFrequency
+        
+        // Recompute note info for locked frequency (to get accurate cents)
+        val displayNoteInfo = noteFinder.findNote(displayFrequency, referenceFrequency)
         
         currentPitchResult = PitchResult(
-            frequency = estimatedFrequency,
-            noteName = noteInfo.noteName,
-            cents = noteInfo.cents,
-            probability = noteInfo.probability
+            frequency = displayFrequency,
+            noteName = displayNoteInfo.noteName,
+            cents = displayNoteInfo.cents,
+            probability = displayNoteInfo.probability
         )
         
         return currentPitchResult
     }
 
-    private fun estimateFrequencyYIN(audioData: FloatArray): Double {
-        // Improved YIN pitch detection algorithm
-        if (audioData.size < AlgorithmConstants.MIN_YIN_BUFFER_SIZE) return AlgorithmConstants.INVALID_FREQUENCY
+    private fun estimateFrequencyYIN(audioData: FloatArray): YinResult {
+        // Improved YIN pitch detection algorithm with clarity feedback
+        if (audioData.size < AlgorithmConstants.MIN_YIN_BUFFER_SIZE) return YinResult(AlgorithmConstants.INVALID_FREQUENCY, 1.0)
         
         val sampleRate = AudioConfig.SAMPLE_RATE
         val buffer = audioData
@@ -130,7 +233,7 @@ class PitchDetector {
         val tauMin = (sampleRate / maxFreq).toInt()  // ~33 samples for 1350Hz
         val tauMax = Math.min(buffer.size / AlgorithmConstants.DIVISOR_FOR_HALF_BUFFER, (sampleRate / minFreq).toInt())  // ~551 samples for 80Hz
         
-        if (tauMax <= tauMin) return AlgorithmConstants.INVALID_FREQUENCY
+        if (tauMax <= tauMin) return YinResult(AlgorithmConstants.INVALID_FREQUENCY, 1.0)
         
         if (DEBUG) Log.d(TAG, "YIN: buffer size=${buffer.size}, tauMin=$tauMin, tauMax=$tauMax, expected tau for 440Hz=${sampleRate/AudioConfig.DEFAULT_REFERENCE_FREQUENCY}")
         
@@ -187,7 +290,7 @@ class PitchDetector {
         // Check clarity of pitch detection
         if (tau > AlgorithmConstants.INVALID_TAU && dPrime[tau] > clarityThreshold) {
             if (DEBUG) Log.d(TAG, "YIN: pitch unclear (dPrime[tau]=${dPrime[tau]} > $clarityThreshold)")
-            return AlgorithmConstants.INVALID_FREQUENCY
+            return YinResult(AlgorithmConstants.INVALID_FREQUENCY, dPrime[tau])
         }
         
         // 5. Parabolic interpolation for better precision
@@ -195,12 +298,12 @@ class PitchDetector {
             val bestTau = parabolicInterpolation(dPrime, tau).toDouble()
             val freq = sampleRate.toDouble() / bestTau
             if (DEBUG) Log.d(TAG, "YIN: parabolic interpolation, bestTau=$bestTau, freq=$freq")
-            return freq
+            return YinResult(freq, dPrime[tau])
         }
         
         val freq = if (tau >= tauMin) sampleRate.toDouble() / tau else AlgorithmConstants.INVALID_FREQUENCY
         if (DEBUG) Log.d(TAG, "YIN: final tau=$tau, freq=$freq")
-        return freq
+        return YinResult(freq, dPrime[tau])
     }
     
     private fun parabolicInterpolation(data: DoubleArray, tau: Int): Float {

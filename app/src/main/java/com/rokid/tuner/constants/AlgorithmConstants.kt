@@ -6,15 +6,15 @@ package com.rokid.tuner.constants
 object AlgorithmConstants {
     // Default threshold values (maximum sensitivity)
     const val DEFAULT_MIN_RMS_THRESHOLD = 0.00055  // 0.055% of max amplitude
-    const val DEFAULT_CLARITY_THRESHOLD = 0.8     // Very tolerant clarity threshold
+    const val DEFAULT_CLARITY_THRESHOLD = 0.7     // Tolerant clarity threshold for better detection
     const val DEFAULT_PROBABILITY_THRESHOLD = 0.05f  // Very tolerant probability threshold
     
     // Sensitivity mapping formula constants (0-100 scale to thresholds)
     const val MAX_RMS_THRESHOLD = 0.01
     const val RMS_THRESHOLD_SCALE = 0.00945
     
-    const val MIN_CLARITY_THRESHOLD = 0.1
-    const val CLARITY_THRESHOLD_SCALE = 0.7
+    const val MIN_CLARITY_THRESHOLD = 0.05
+    const val CLARITY_THRESHOLD_SCALE = 0.65
     
     const val MAX_PROBABILITY_THRESHOLD = 0.5f
     const val PROBABILITY_THRESHOLD_SCALE = 0.45f
