@@ -75,7 +75,7 @@ class PitchDetector {
 
     private val frequencyHistory = mutableListOf<Double>()
     private val clarityHistory = mutableListOf<Double>()
-    private val historySize = 3
+    private val historySize = 5
 
     private fun addToHistory(frequency: Double, clarity: Double) {
         frequencyHistory.add(frequency)
@@ -104,8 +104,8 @@ class PitchDetector {
     private var lockedNoteName: String? = null
     private var lockedFrequency: Double = 0.0
     private var lockConfidence: Int = 0
-    private val LOCK_THRESHOLD = 2
-    private val FREQUENCY_TOLERANCE_RATIO = 0.1 // ±10% frequency tolerance for lock
+    private val LOCK_THRESHOLD = 3
+    private val FREQUENCY_TOLERANCE_RATIO = 0.08 // ±8% frequency tolerance for lock
 
     fun detectPitch(audioData: FloatArray): PitchResult? = synchronized(this) {
         if (audioData.isEmpty()) {
