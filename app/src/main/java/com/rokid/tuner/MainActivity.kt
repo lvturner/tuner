@@ -12,7 +12,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.rokid.tuner.audio.AudioRecorder
 import com.rokid.tuner.pitch.PitchDetector
-import com.rokid.tuner.ui.SettingsDialog
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -40,16 +40,16 @@ class MainActivity : AppCompatActivity() {
     private var tuningJob: Job? = null
     @Volatile private var isTuning = false
      private var activityStartTime: Long = UiConstants.INITIAL_TIME
-    private var settingsDialog: SettingsDialog? = null
+
      private var currentRms = UiConstants.INITIAL_RMS
-      private var currentSensitivity = UiConstants.DEFAULT_SENSITIVITY
-      private var inTuneThresholdCents = UiConstants.DEFAULT_IN_TUNE_THRESHOLD_CENTS
+       private val currentSensitivity = UiConstants.DEFAULT_SENSITIVITY
+       private val inTuneThresholdCents = UiConstants.DEFAULT_IN_TUNE_THRESHOLD_CENTS
      private var consecutiveNullReads = UiConstants.INITIAL_NULL_READS
     private var lastValidPitchResult: PitchDetector.PitchResult? = null
      private var lastValidPitchTime: Long = UiConstants.INITIAL_TIME
-     @Volatile private var displayDelayMs = UiConstants.DEFAULT_DISPLAY_DELAY_MS // Default 1000ms display delay
+      private val displayDelayMs = UiConstants.DEFAULT_DISPLAY_DELAY_MS // Default 1000ms display delay
 
-     @Volatile private var pitchUpdateDelayMs = UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS // Default 200ms delay between pitch updates
+      private val pitchUpdateDelayMs = UiConstants.DEFAULT_PITCH_UPDATE_DELAY_MS // Default 200ms delay between pitch updates
 
     private var lastPitchUpdateTime: Long = UiConstants.INITIAL_TIME
 
@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         initViews()
-        setupClickListeners()
+
         
         activityStartTime = System.currentTimeMillis()
         
@@ -90,11 +90,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    private fun setupClickListeners() {
-        mainLayout.setOnClickListener {
-            showSettingsDialog()
-        }
-    }
+
 
     private fun startTuning() {
         if (isTuning) return
@@ -135,7 +131,7 @@ class MainActivity : AppCompatActivity() {
                           }
                            withContext(Dispatchers.Main) {
                                 currentRms = UiConstants.INITIAL_RMS
-                               updateRmsInDialog()
+
                            }
                        } else {
                             consecutiveNullReads = UiConstants.INITIAL_NULL_READS
@@ -144,7 +140,7 @@ class MainActivity : AppCompatActivity() {
                           if (debug) Log.d(TAG, "RMS: $rms")
                          withContext(Dispatchers.Main) {
                               currentRms = rms
-                              updateRmsInDialog()
+                              
                          }
                           val pitchResult = pitchDetector?.detectPitch(audioData)
                             if (pitchResult == null) {
@@ -215,7 +211,7 @@ class MainActivity : AppCompatActivity() {
              withContext(Dispatchers.Main) {
                   statusTextView.text = ""
                    currentRms = UiConstants.INITIAL_RMS
-                  updateRmsInDialog()
+                  
                   
                   // Reset tuner display
                   noteTextView.text = "--"
@@ -270,49 +266,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showSettingsDialog() {
-        // Don't show another dialog if one is already showing
-        if (settingsDialog?.isAdded == true) {
-            return
-        }
-        
-          settingsDialog = SettingsDialog.newInstance(
-               sensitivity = currentSensitivity,
-               displayDelayMs = displayDelayMs,
-               pitchUpdateDelayMs = pitchUpdateDelayMs,
-               inTuneThresholdCents = inTuneThresholdCents,
-              onReferenceFrequencyChanged = { referenceFrequency ->
-                  // Update pitch detector with new reference frequency
-                  pitchDetector?.setReferenceFrequency(referenceFrequency)
-              },
-              onSensitivityChanged = { sensitivity ->
-                  // Update pitch detector with new sensitivity
-                  currentSensitivity = sensitivity
-                  pitchDetector?.setSensitivity(sensitivity)
-              },
-              onDisplayDelayChanged = { delayMs ->
-                  // Update display delay
-                  displayDelayMs = delayMs
-              },
-               onPitchUpdateDelayChanged = { delayMs ->
-                   // Update pitch update delay
-                   pitchUpdateDelayMs = delayMs
-               },
-               onInTuneThresholdChanged = { thresholdCents ->
-                   // Update in-tune threshold
-                   inTuneThresholdCents = thresholdCents
-               }
-          ).apply {
-            onDismissListener = {
-                settingsDialog = null
-            }
-            show(supportFragmentManager, "settings")
-        }
-    }
 
-    private fun updateRmsInDialog() {
-        settingsDialog?.updateRmsValue(currentRms)
-    }
+
 
     private fun hasAudioPermission(): Boolean {
         return ContextCompat.checkSelfPermission(

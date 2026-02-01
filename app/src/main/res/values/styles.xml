@@ -42,10 +42,5 @@
         <item name="android:textColor">@color/text_secondary</item>
     </style>
 
-    <!-- Dialog theme -->
-    <style name="TunerDialog" parent="Theme.MaterialComponents.DayNight.Dialog">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="colorPrimary">@color/primary_color</item>
-        <item name="colorOnPrimary">@color/white</item>
-    </style>
+
 </resources>
