@@ -36,3 +36,6 @@ Alternatively, use the standard Gradle wrapper:
 ```
 
 The deploy script automatically builds the APK if needed and installs it to a connected Android device or emulator.
+
+# Support
+[![Tip in Crypto](https://tip.md/badge.svg)](https://tip.md/lvturner)
