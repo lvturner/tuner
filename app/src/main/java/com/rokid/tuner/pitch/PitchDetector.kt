@@ -5,17 +5,15 @@ import com.rokid.tuner.audio.AudioConfig
 import com.rokid.tuner.constants.AlgorithmConstants
 import com.rokid.tuner.constants.MusicalConstants
 import com.rokid.tuner.constants.UiConstants
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 class PitchDetector {
 
     companion object {
         private const val TAG = "PitchDetector"
-        private const val DEFAULT_MIN_RMS_THRESHOLD = AlgorithmConstants.DEFAULT_MIN_RMS_THRESHOLD // 0.055% of max amplitude (sensitive to short peaks but rejects constant low noise)
-        private const val DEFAULT_CLARITY_THRESHOLD = AlgorithmConstants.DEFAULT_CLARITY_THRESHOLD // Very tolerant clarity threshold (lower dPrime = clearer pitch)
-        private const val DEFAULT_PROBABILITY_THRESHOLD = AlgorithmConstants.DEFAULT_PROBABILITY_THRESHOLD // Very tolerant probability threshold
-        private const val DEBUG = UiConstants.DEBUG
+        private const val DEFAULT_MIN_RMS_THRESHOLD = AlgorithmConstants.DEFAULT_MIN_RMS_THRESHOLD
+        private const val DEFAULT_CLARITY_THRESHOLD = AlgorithmConstants.DEFAULT_CLARITY_THRESHOLD
+        private const val DEFAULT_PROBABILITY_THRESHOLD = AlgorithmConstants.DEFAULT_PROBABILITY_THRESHOLD
+        private val DEBUG = UiConstants.DEBUG
         
         /**
          * Sensitivity mapping (0-100 scale to thresholds)
@@ -45,15 +43,21 @@ class PitchDetector {
         }
     }
 
-    private var currentPitchResult: PitchResult? = null
-    private var referenceFrequency = AudioConfig.DEFAULT_REFERENCE_FREQUENCY
-    private var minRmsThreshold = DEFAULT_MIN_RMS_THRESHOLD
-    private var clarityThreshold = DEFAULT_CLARITY_THRESHOLD
-    private var probabilityThreshold = DEFAULT_PROBABILITY_THRESHOLD
-    private val mutex = Mutex()
+    // Synchronization lock for thread-safe access to mutable state
+    private val lock = Any()
+    
+    @Volatile private var currentPitchResult: PitchResult? = null
+    @Volatile private var referenceFrequency = AudioConfig.DEFAULT_REFERENCE_FREQUENCY
+    @Volatile private var minRmsThreshold = DEFAULT_MIN_RMS_THRESHOLD
+    @Volatile private var clarityThreshold = DEFAULT_CLARITY_THRESHOLD
+    @Volatile private var probabilityThreshold = DEFAULT_PROBABILITY_THRESHOLD
     private val noteFinder = NoteFinder()
     
-    private fun computeRMS(audioData: FloatArray): Double {
+    /**
+     * Computes the Root Mean Square (RMS) of the audio data.
+     * This can be used externally for signal strength detection.
+     */
+    fun computeRMS(audioData: FloatArray): Double {
         var sum = 0.0
         for (sample in audioData) {
             sum += sample * sample
@@ -73,20 +77,32 @@ class PitchDetector {
         val clarity: Double  // dPrime[tau] - lower is clearer
     )
 
+    // History for median filtering (guarded by lock)
     private val frequencyHistory = mutableListOf<Double>()
     private val clarityHistory = mutableListOf<Double>()
     private val historySize = 5
 
+    // Note locking to prevent jumping to harmonics (guarded by lock)
+    private var lockedNoteName: String? = null
+    private var lockedFrequency: Double = 0.0
+    private var lockConfidence: Int = 0
+    private val LOCK_THRESHOLD = 3
+    private val FREQUENCY_TOLERANCE_RATIO = 0.08 // +/-8% frequency tolerance for lock
+
     private fun addToHistory(frequency: Double, clarity: Double) {
+        // Must be called within synchronized(lock) block
         frequencyHistory.add(frequency)
         clarityHistory.add(clarity)
-        if (frequencyHistory.size > historySize) {
+        while (frequencyHistory.size > historySize) {
             frequencyHistory.removeAt(0)
+        }
+        while (clarityHistory.size > historySize) {
             clarityHistory.removeAt(0)
         }
     }
 
     private fun medianFrequency(): Double {
+        // Must be called within synchronized(lock) block
         if (frequencyHistory.isEmpty()) return 0.0
         val sorted = frequencyHistory.sorted()
         val mid = sorted.size / 2
@@ -94,20 +110,14 @@ class PitchDetector {
     }
 
     private fun medianClarity(): Double {
+        // Must be called within synchronized(lock) block
         if (clarityHistory.isEmpty()) return 1.0
         val sorted = clarityHistory.sorted()
         val mid = sorted.size / 2
         return if (sorted.size % 2 == 0) (sorted[mid - 1] + sorted[mid]) / 2.0 else sorted[mid]
     }
 
-    // Note locking to prevent jumping to harmonics
-    private var lockedNoteName: String? = null
-    private var lockedFrequency: Double = 0.0
-    private var lockConfidence: Int = 0
-    private val LOCK_THRESHOLD = 3
-    private val FREQUENCY_TOLERANCE_RATIO = 0.08 // ±8% frequency tolerance for lock
-
-    fun detectPitch(audioData: FloatArray): PitchResult? = synchronized(this) {
+    fun detectPitch(audioData: FloatArray): PitchResult? = synchronized(lock) {
         if (audioData.isEmpty()) {
             Log.d(TAG, "Empty audio data")
             return null
@@ -326,39 +336,51 @@ class PitchDetector {
     }
 
     fun setReferenceFrequency(frequency: Double) {
-        referenceFrequency = frequency
+        synchronized(lock) {
+            referenceFrequency = frequency
+        }
     }
 
     fun setSensitivity(sensitivity: Int) {
-        // Clamp sensitivity to 0-100 range
-        val clampedSensitivity = sensitivity.coerceIn(UiConstants.MIN_SENSITIVITY, UiConstants.MAX_SENSITIVITY)
-        minRmsThreshold = rmsThresholdFromSensitivity(clampedSensitivity)
-        clarityThreshold = clarityThresholdFromSensitivity(clampedSensitivity)
-        probabilityThreshold = probabilityThresholdFromSensitivity(clampedSensitivity)
-        Log.d(TAG, "Set sensitivity to $clampedSensitivity: RMS threshold=$minRmsThreshold, clarity threshold=$clarityThreshold, probability threshold=$probabilityThreshold")
+        synchronized(lock) {
+            // Clamp sensitivity to 0-100 range
+            val clampedSensitivity = sensitivity.coerceIn(UiConstants.MIN_SENSITIVITY, UiConstants.MAX_SENSITIVITY)
+            minRmsThreshold = rmsThresholdFromSensitivity(clampedSensitivity)
+            clarityThreshold = clarityThresholdFromSensitivity(clampedSensitivity)
+            probabilityThreshold = probabilityThresholdFromSensitivity(clampedSensitivity)
+            Log.d(TAG, "Set sensitivity to $clampedSensitivity: RMS threshold=$minRmsThreshold, clarity threshold=$clarityThreshold, probability threshold=$probabilityThreshold")
+        }
     }
 
     fun setThresholds(rmsThreshold: Double, clarityThresh: Double, probThresh: Float) {
-        minRmsThreshold = rmsThreshold
-        clarityThreshold = clarityThresh
-        probabilityThreshold = probThresh
-        Log.d(TAG, "Set thresholds: RMS=$minRmsThreshold, clarity=$clarityThreshold, probability=$probabilityThreshold")
+        synchronized(lock) {
+            minRmsThreshold = rmsThreshold
+            clarityThreshold = clarityThresh
+            probabilityThreshold = probThresh
+            Log.d(TAG, "Set thresholds: RMS=$minRmsThreshold, clarity=$clarityThreshold, probability=$probabilityThreshold")
+        }
     }
 
-    fun getCurrentPitchResult(): PitchResult? = currentPitchResult
+    fun getCurrentPitchResult(): PitchResult? = synchronized(lock) { currentPitchResult }
 
-    fun startDispatcher() {
-        // Full TarsosDSP integration would go here
-        // For now using simplified YIN above
-    }
-
-    fun stopDispatcher() {
-        // No dispatcher in simplified implementation
+    /**
+     * Resets the pitch detection state, clearing history and note lock.
+     * Call this when restarting the tuner.
+     */
+    fun reset() {
+        synchronized(lock) {
+            frequencyHistory.clear()
+            clarityHistory.clear()
+            lockedNoteName = null
+            lockedFrequency = 0.0
+            lockConfidence = 0
+            currentPitchResult = null
+        }
     }
     
     fun testWithSyntheticFrequency(frequency: Double): PitchResult? {
         val sampleRate = AudioConfig.SAMPLE_RATE
-        val duration = AlgorithmConstants.SYNTHETIC_DURATION_SECONDS // 100ms
+        val duration = AlgorithmConstants.SYNTHETIC_DURATION_SECONDS
         val samples = (sampleRate * duration).toInt()
         val audioData = FloatArray(samples)
         val angularFreq = 2.0 * Math.PI * frequency / sampleRate

@@ -5,9 +5,13 @@
     <string name="permission_rationale">This app needs microphone access to detect guitar pitch</string>
     <string name="grant_permission">Grant Permission</string>
     <string name="no_audio_permission">Microphone permission required</string>
-    <string name="sharp">♯</string>
-    <string name="flat">♭</string>
+    <string name="sharp">&#x266F;</string>
+    <string name="flat">&#x266D;</string>
     <string name="in_tune">In Tune</string>
     <string name="sharp_indicator">Sharp</string>
     <string name="flat_indicator">Flat</string>
+    <string name="listening">Listening</string>
+    <string name="audio_error">Audio error</string>
+    <string name="error_format">Error: %s</string>
+    <string name="note_placeholder">--</string>
 </resources>

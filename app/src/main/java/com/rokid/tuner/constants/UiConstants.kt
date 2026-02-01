@@ -47,8 +47,9 @@ object UiConstants {
     // Permission request codes
     const val AUDIO_PERMISSION_REQUEST_CODE = 1001
     
-    // Debug logging
-    const val DEBUG = true
+    // Debug logging - disabled by default for release builds
+    // Set to true only during development
+    const val DEBUG = false
     const val DEBUG_ITERATION_THRESHOLD = 10
     const val DEBUG_ITERATION_MOD_20 = 20
     const val DEBUG_ITERATION_MOD_100 = 100

@@ -42,13 +42,12 @@ dependencies {
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     
-    // TarsosDSP for pitch detection - temporarily disabled
-    // implementation 'be.tarsos.dsp:core:2.4'
-    // implementation 'be.tarsos.dsp:jvm:2.4'
-    
     // Lifecycle components
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+    
+    // Activity KTX for viewModels() delegate
+    implementation 'androidx.activity:activity-ktx:1.8.1'
     
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
