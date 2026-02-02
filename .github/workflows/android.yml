@@ -43,6 +43,15 @@ jobs:
       run: chmod +x gradlew
     - name: Build Release APK
       run: ./gradlew assembleRelease
+    - name: Check exact APK path
+      run: |
+        if [ -f "app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
+          echo "APK found at expected location"
+          ls -lh "app/build/outputs/apk/release/app-release-unsigned.apk"
+        else
+          echo "APK not found at expected location, searching..."
+          find . -name "*.apk" -type f
+        fi
     - name: Upload Release APK
       uses: softprops/action-gh-release@v1
       with:
