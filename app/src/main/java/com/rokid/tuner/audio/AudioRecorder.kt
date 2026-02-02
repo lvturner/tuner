@@ -1,5 +1,6 @@
 package com.rokid.tuner.audio
 
+import android.annotation.SuppressLint
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
@@ -8,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 
+@SuppressLint("MissingPermission")
 class AudioRecorder {
 
     private var audioRecord: AudioRecord? = null
@@ -44,6 +46,7 @@ class AudioRecorder {
         }
     }
 
+    @SuppressLint("MissingPermission")
     fun start() {
         synchronized(lock) {
             if (isRecording.get()) return
