@@ -44,6 +44,7 @@ Pre-built APKs can be found on the [releases page](https://github.com/lvturner/t
 Sorry - seems that it won't record audio while I'm also using the microphone to tune the guitar, but here's a quick demo vid!
 
 Click image to view on YouTube:
+
 [![Guitar Tuner Demo](https://img.youtube.com/vi/XBamSr9fnhM/0.jpg)](https://www.youtube.com/shorts/XBamSr9fnhM)
 
 
