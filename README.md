@@ -37,5 +37,15 @@ Alternatively, use the standard Gradle wrapper:
 
 The deploy script automatically builds the APK if needed and installs it to a connected Android device or emulator.
 
+### Prebuilt APKs
+Pre-built APKs can be found on the [releases page](https://github.com/lvturner/tuner/releases)
+
+# Demo
+Sorry - seems that it won't record audio while I'm also using the microphone to tune the guitar, but here's a quick demo vid!
+
+Click image to view on YouTube:
+[![Guitar Tuner Demo](https://img.youtube.com/vi/XBamSr9fnhM/0.jpg)](https://www.youtube.com/shorts/XBamSr9fnhM)
+
+
 # Support
 [![Tip in Crypto](https://tip.md/badge.svg)](https://tip.md/lvturner)
