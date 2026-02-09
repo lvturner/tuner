@@ -12,17 +12,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Run tests
-      run: ./gradlew test
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Run tests
+        run: ./gradlew test
 
   build-and-release:
     needs: test
@@ -30,33 +30,45 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
-    - name: Check exact APK path
-      run: |
-        if [ -f "app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
-          echo "APK found at expected location"
-          ls -lh "app/build/outputs/apk/release/app-release-unsigned.apk"
-        else
-          echo "APK not found at expected location, searching..."
-          find . -name "*.apk" -type f
-        fi
-    - name: Upload Release APK
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          app/build/outputs/apk/release/app-release-unsigned.apk
-        generate_release_notes: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build APKs
+        run: |
+          ./gradlew assembleDebug
+          ./gradlew assembleRelease
+      - name: Check APK paths
+        run: |
+          echo "Checking for APK files..."
+          if [ -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
+            echo "✓ Debug APK found"
+            ls -lh "app/build/outputs/apk/debug/app-debug.apk"
+          else
+            echo "✗ Debug APK not found at expected location"
+            find . -name "*debug*.apk" -type f 2>/dev/null || echo "No debug APKs found"
+          fi
+          
+          if [ -f "app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
+            echo "✓ Release APK found"
+            ls -lh "app/build/outputs/apk/release/app-release-unsigned.apk"
+          else
+            echo "✗ Release APK not found at expected location"
+            find . -name "*release*.apk" -type f 2>/dev/null || echo "No release APKs found"
+          fi
+      - name: Upload APKs to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/apk/release/app-release-unsigned.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
